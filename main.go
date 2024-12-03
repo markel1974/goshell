@@ -99,13 +99,14 @@ func main() {
 		}
 	*/
 
-	appName := "foo"
-	appVersion := "1.1.1"
-	prompt := appName + " " + appVersion + "> "
-	port := 1234
-	user := "u"
-	password := "p"
-	secure := true
+	const appName = "foo"
+	const appVersion = "1.1.1"
+	const prompt = appName + " " + appVersion + "> "
+	const host = "127.0.0.1"
+	const port = 1234
+	const user = "u"
+	const password = "p"
+	const secure = true
 
 	t := cli.NewCommand()
 	_ = t.AddCommand(fooCommand())
@@ -114,12 +115,13 @@ func main() {
 	auth.SetCredentials(user, password)
 
 	fmt.Println("Starting shell")
-	fmt.Println("port", 1234)
+	fmt.Println("host", host)
+	fmt.Println("port", port)
 	fmt.Println("secure", secure)
 	fmt.Println("user", user)
 	fmt.Println("password", password)
 
-	k := shell.New(secure, auth, port, false)
+	k := shell.New(secure, auth, host, port, false)
 	k.SetPrompt(prompt)
 	k.SetTemplate(t)
 

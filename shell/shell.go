@@ -30,15 +30,15 @@ type IShellServer interface {
 	AsyncStart()
 }
 
-func New(secure bool, auth interfaces.IAuthenticator, port int, autosave bool) IShellServer {
+func New(secure bool, auth interfaces.IAuthenticator, host string, port int, autosave bool) IShellServer {
 	var ticker = adaptiveticker.NewAdaptiveTicker()
 	if auth == nil {
 		auth = authenticator.NewSimpleAuthenticator()
 	}
 
 	if secure {
-		return ssh.NewServer(ticker, auth, port, autosave)
+		return ssh.NewServer(ticker, auth, host, port, autosave)
 	} else {
-		return telnet.NewServer(ticker, auth, port, autosave)
+		return telnet.NewServer(ticker, auth, host, port, autosave)
 	}
 }
