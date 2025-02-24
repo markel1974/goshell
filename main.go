@@ -20,6 +20,7 @@ import (
 	"github.com/markel1974/goshell/shell/authenticator"
 	"github.com/markel1974/goshell/shell/cli"
 	"github.com/markel1974/goshell/shell/interfaces"
+	"log"
 	"math/rand"
 )
 
@@ -102,26 +103,25 @@ func main() {
 	const appName = "foo"
 	const appVersion = "1.1.1"
 	const prompt = appName + " " + appVersion + "> "
-	const host = "127.0.0.1"
 	const port = 1234
-	const user = "u"
-	const password = "p"
+	const user = "tinmr305"
 	const secure = true
 
 	t := cli.NewCommand()
 	_ = t.AddCommand(fooCommand())
 
 	auth := authenticator.NewSimpleAuthenticator()
-	auth.SetCredentials(user, password)
-
+	pwd, err := auth.Setup(user)
+	if err != nil {
+		log.Fatal(err)
+	}
 	fmt.Println("Starting shell")
-	fmt.Println("host", host)
 	fmt.Println("port", port)
 	fmt.Println("secure", secure)
 	fmt.Println("user", user)
-	fmt.Println("password", password)
+	fmt.Println("password", pwd)
 
-	k := shell.New(secure, auth, host, port, false)
+	k := shell.New(secure, auth, port, false)
 	k.SetPrompt(prompt)
 	k.SetTemplate(t)
 

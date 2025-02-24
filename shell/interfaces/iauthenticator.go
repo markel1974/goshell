@@ -14,15 +14,6 @@
 
 package interfaces
 
-type AuthMode int
-
-const (
-	AuthModeNone     AuthMode = iota
-	AuthModePassword AuthMode = iota
-	AuthModeFull     AuthMode = iota
-)
-
 type IAuthenticator interface {
-	GetAuthenticationMode() AuthMode
 	IsAuthenticated(user string, password string) bool
 }

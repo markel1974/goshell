@@ -68,18 +68,6 @@ func NewShell(auth interfaces.IAuthenticator, terminal interfaces.ITerminal, pro
 		passwordRetry: 0,
 		state:         stateUndefined,
 	}
-
-	switch c.auth.GetAuthenticationMode() {
-	case interfaces.AuthModeFull:
-		c.setUsernameRequiredState()
-	case interfaces.AuthModePassword:
-		c.setPasswordRequiredState()
-	case interfaces.AuthModeNone:
-		c.setAuthenticatedState()
-	default:
-		c.setAuthenticatedState()
-	}
-
 	return c
 }
 

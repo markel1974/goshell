@@ -36,10 +36,10 @@ type Server struct {
 	autosave bool
 }
 
-func NewServer(ticker *adaptiveticker.AdaptiveTicker, auth interfaces.IAuthenticator, host string, port int, autosave bool) *Server {
+func NewServer(ticker *adaptiveticker.AdaptiveTicker, auth interfaces.IAuthenticator, port int, autosave bool) *Server {
 	return &Server{
 		ticker:   ticker,
-		addr:     fmt.Sprintf("%s:%d", host, port),
+		addr:     fmt.Sprintf("%s:%d", "127.0.0.1", port),
 		factory:  terminal.NewEquipmentFactory(),
 		auth:     auth,
 		autosave: autosave,

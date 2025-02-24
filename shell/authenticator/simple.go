@@ -14,47 +14,55 @@
 
 package authenticator
 
-import "github.com/markel1974/goshell/shell/interfaces"
+import (
+	"crypto/sha512"
+	"encoding/hex"
+)
 
 type SimpleAuthenticator struct {
 	username string
-	password string
+	hash     string
+	salt     []byte
 }
 
 func NewSimpleAuthenticator() *SimpleAuthenticator {
-	a := &SimpleAuthenticator{}
+	a := &SimpleAuthenticator{
+		username: "",
+		hash:     "",
+		salt:     []byte{},
+	}
 	return a
 }
 
-func (a *SimpleAuthenticator) SetCredentials(username string, password string) {
+func (a *SimpleAuthenticator) Setup(username string) (string, error) {
+	pwd, err := Generate(16)
+	if err != nil {
+		return "", err
+	}
+	salt, err := Generate(8)
+	if err != nil {
+		return "", err
+	}
+	a.salt = []byte(salt)
+	a.hash = a.generateHash(pwd, a.salt)
 	a.username = username
-	a.password = password
+	return pwd, nil
 }
 
-func (a *SimpleAuthenticator) GetAuthenticationMode() interfaces.AuthMode {
-	if len(a.username) > 0 {
-		return interfaces.AuthModeFull
-	}
-
-	if len(a.password) > 0 {
-		return interfaces.AuthModePassword
-	}
-
-	return interfaces.AuthModeNone
-}
-
-func (a *SimpleAuthenticator) IsAuthenticated(user string, password string) bool {
-	switch a.GetAuthenticationMode() {
-	case interfaces.AuthModeFull:
-		return user == a.username && password == a.password
-
-	case interfaces.AuthModePassword:
-		return password == a.password
-
-	case interfaces.AuthModeNone:
-		return true
-
-	default:
+func (a *SimpleAuthenticator) IsAuthenticated(user string, pass string) bool {
+	if a.username != user {
 		return false
 	}
+	hash := a.generateHash(pass, a.salt)
+	return a.hash == hash
+}
+
+func (a *SimpleAuthenticator) generateHash(password string, salt []byte) string {
+	var passwordBytes = []byte(password)
+	var sha512Hasher = sha512.New()
+	passwordBytes = append(passwordBytes, salt...)
+	sha512Hasher.Write(passwordBytes)
+	var hashedPasswordBytes = sha512Hasher.Sum(nil)
+	var hashedPasswordHex = hex.EncodeToString(hashedPasswordBytes)
+	return hashedPasswordHex
 }
