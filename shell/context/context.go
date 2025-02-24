@@ -112,22 +112,25 @@ func (c *Context) Close() {
 }
 
 func (c *Context) Exec() {
+	d := make(chan bool)
 	go func() {
+		d <- true
 		readBuffer := make([]byte, 1024)
 		for {
-			if n, err := c.reader.Read(readBuffer); err == nil {
+			n, err := c.reader.Read(readBuffer)
+			if err == nil {
 				if n > 0 {
-					var readEvent = newMessageRead(readBuffer, n)
-					readEvent.postEvent(c.messageChan)
+					re := newMessageRead(readBuffer, n)
+					re.postEvent(c.messageChan)
 				}
 			} else {
-				var quitEvent = newMessageQuit()
-				quitEvent.postEvent(c.messageChan)
+				qe := newMessageQuit()
+				qe.postEvent(c.messageChan)
 				return
 			}
 		}
 	}()
-
+	_ = <-d
 	c.eventLoop()
 }
 
@@ -169,9 +172,7 @@ func (c *Context) execSuggestion(in string, count int) bool {
 
 func (c *Context) eventLoop() {
 	_, _ = c.terminal.WriteColor("Admin Console Ready", interfaces.ColorBlueDef, interfaces.ColorRedDef, interfaces.ModeNormal)
-
 	c.defaultApp.DoNext()
-
 	for {
 		select {
 		case m := <-c.messageChan:
@@ -179,7 +180,6 @@ func (c *Context) eventLoop() {
 		case t := <-c.timersChan:
 			c.messageEventHandler(t.Event.(iMessage))
 		}
-
 		if c.Exit {
 			c.shutdown()
 			return
@@ -189,7 +189,6 @@ func (c *Context) eventLoop() {
 
 func (c *Context) messageEventHandler(m iMessage) {
 	if m != nil {
-
 		switch m.getType() {
 		case MessageTypeRead:
 			if mm, ok := m.(*MessageRead); ok {

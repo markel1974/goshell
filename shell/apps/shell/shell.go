@@ -59,6 +59,7 @@ type Shell struct {
 }
 
 func NewShell(auth interfaces.IAuthenticator, terminal interfaces.ITerminal, prompt string, autosave bool) *Shell {
+
 	c := &Shell{
 		history:       NewHistoryHandler(128, autosave),
 		echo:          true,
@@ -67,6 +68,9 @@ func NewShell(auth interfaces.IAuthenticator, terminal interfaces.ITerminal, pro
 		defaultPrompt: prompt,
 		passwordRetry: 0,
 		state:         stateUndefined,
+	}
+	if auth.IsAuthenticated() {
+		c.state = stateAuthenticated
 	}
 	return c
 }
@@ -87,7 +91,6 @@ func (c *Shell) KeyEvent(event *interfaces.KeyData) bool {
 	case interfaces.KeyTypeCursor:
 		c.cursorPressed(interfaces.CursorCodeDef(event.Key))
 	}
-
 	return ret
 }
 
@@ -162,7 +165,7 @@ func (c *Shell) enterPressed() bool {
 			c.setPasswordRequiredState()
 
 		case statePasswordRequired:
-			if c.auth.IsAuthenticated(c.currentUsername, buffer) {
+			if c.auth.Authenticate(c.currentUsername, buffer) {
 				c.setAuthenticatedState()
 			} else {
 				c.passwordRetry++

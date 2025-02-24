@@ -104,23 +104,21 @@ func main() {
 	const appVersion = "1.1.1"
 	const prompt = appName + " " + appVersion + "> "
 	const port = 1234
-	const user = "tinmr305"
+	const user = "u"
 	const secure = true
+	const pass = "p"
 
 	t := cli.NewCommand()
 	_ = t.AddCommand(fooCommand())
 
 	auth := authenticator.NewSimpleAuthenticator()
-	pwd, err := auth.Setup(user)
-	if err != nil {
+	if err := auth.Setup(user, pass); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("Starting shell")
 	fmt.Println("port", port)
 	fmt.Println("secure", secure)
 	fmt.Println("user", user)
-	fmt.Println("password", pwd)
-
 	k := shell.New(secure, auth, port, false)
 	k.SetPrompt(prompt)
 	k.SetTemplate(t)

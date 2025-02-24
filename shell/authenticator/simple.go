@@ -15,54 +15,44 @@
 package authenticator
 
 import (
-	"crypto/sha512"
-	"encoding/hex"
+	"fmt"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type SimpleAuthenticator struct {
-	username string
-	hash     string
-	salt     []byte
+	username      string
+	hash          []byte
+	authenticated bool
 }
 
 func NewSimpleAuthenticator() *SimpleAuthenticator {
 	a := &SimpleAuthenticator{
-		username: "",
-		hash:     "",
-		salt:     []byte{},
+		username:      "",
+		hash:          []byte{},
+		authenticated: false,
 	}
 	return a
 }
 
-func (a *SimpleAuthenticator) Setup(username string) (string, error) {
-	pwd, err := Generate(16)
+func (a *SimpleAuthenticator) Setup(username string, password string) error {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return "", err
+		return fmt.Errorf("error hashing password: %s", err.Error())
 	}
-	salt, err := Generate(8)
-	if err != nil {
-		return "", err
-	}
-	a.salt = []byte(salt)
-	a.hash = a.generateHash(pwd, a.salt)
 	a.username = username
-	return pwd, nil
+	a.hash = hashedPassword
+	return nil
 }
 
-func (a *SimpleAuthenticator) IsAuthenticated(user string, pass string) bool {
+func (a *SimpleAuthenticator) Authenticate(user string, pass string) bool {
 	if a.username != user {
-		return false
+		a.authenticated = false
+	} else {
+		a.authenticated = bcrypt.CompareHashAndPassword(a.hash, []byte(pass)) == nil
 	}
-	hash := a.generateHash(pass, a.salt)
-	return a.hash == hash
+	return a.authenticated
 }
 
-func (a *SimpleAuthenticator) generateHash(password string, salt []byte) string {
-	var passwordBytes = []byte(password)
-	var sha512Hasher = sha512.New()
-	passwordBytes = append(passwordBytes, salt...)
-	sha512Hasher.Write(passwordBytes)
-	var hashedPasswordBytes = sha512Hasher.Sum(nil)
-	var hashedPasswordHex = hex.EncodeToString(hashedPasswordBytes)
-	return hashedPasswordHex
+func (a *SimpleAuthenticator) IsAuthenticated() bool {
+	return a.authenticated
 }

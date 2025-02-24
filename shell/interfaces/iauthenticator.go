@@ -15,5 +15,6 @@
 package interfaces
 
 type IAuthenticator interface {
-	IsAuthenticated(user string, password string) bool
+	Authenticate(user string, password string) bool
+	IsAuthenticated() bool
 }

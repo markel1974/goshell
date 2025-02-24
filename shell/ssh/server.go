@@ -22,7 +22,6 @@ import (
 	"encoding/pem"
 	"fmt"
 	"github.com/markel1974/goshell/shell/adaptiveticker"
-	"github.com/markel1974/goshell/shell/authenticator"
 	"github.com/markel1974/goshell/shell/cli"
 	"github.com/markel1974/goshell/shell/context"
 	"github.com/markel1974/goshell/shell/interfaces"
@@ -46,7 +45,6 @@ type Server struct {
 	privateKeyFilename string
 	debug              bool
 	auth               interfaces.IAuthenticator
-	nilAuthenticator   interfaces.IAuthenticator
 	autosave           bool
 }
 
@@ -57,7 +55,6 @@ func NewServer(ticker *adaptiveticker.AdaptiveTicker, auth interfaces.IAuthentic
 		factory:            terminal.NewEquipmentFactory(),
 		authorized:         make(map[string]bool),
 		auth:               auth,
-		nilAuthenticator:   authenticator.NewSimpleAuthenticator(),
 		initialized:        false,
 		privateKeyFilename: "id_rsa",
 		debug:              false,
@@ -84,7 +81,7 @@ func (r *Server) Setup() {
 
 	r.config = &ssh.ServerConfig{
 		PasswordCallback: func(c ssh.ConnMetadata, pass []byte) (*ssh.Permissions, error) {
-			if r.auth.IsAuthenticated(c.User(), string(pass)) {
+			if r.auth.Authenticate(c.User(), string(pass)) {
 				return nil, nil
 			}
 			return nil, fmt.Errorf("password rejected for %q", c.User())
@@ -197,7 +194,7 @@ func (r *Server) handleConnection(nConn net.Conn) {
 			continue
 		}
 
-		ctx := context.NewContext(r.ticker, channel, channel, r.nilAuthenticator, r.factory, r.template, r.prompt, r.autosave)
+		ctx := context.NewContext(r.ticker, channel, channel, r.auth, r.factory, r.template, r.prompt, r.autosave)
 		ctx.Setup()
 		//ctx.SetEnterKey(10)
 
