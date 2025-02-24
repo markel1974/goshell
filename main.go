@@ -24,7 +24,34 @@ import (
 	"math/rand"
 )
 
+type stringValue string
+
+func newStringValue(val string, p *string) *stringValue {
+	*p = val
+	return (*stringValue)(p)
+}
+
+func (s *stringValue) Set(val string) error {
+	*s = stringValue(val)
+	return nil
+}
+
+func (s *stringValue) Get() string { return string(*s) }
+
+func (s *stringValue) String() string { return string(*s) }
+
 func fooCommand() *cli.Command {
+	//var ptr string
+	//args := "-v test"
+	//flag.CommandLine = flag.NewFlagSet("name", flag.ExitOnError)
+	//flag.CommandLine.Var(newStringValue("", &ptr), "v", "usage")
+	//err := flag.CommandLine.Parse(os.Args[1:])
+	//if err != nil {
+	//	fmt.Println(err)
+	//	os.Exit(1)
+	//}
+	//fmt.Println(ptr)
+
 	foo := cli.NewCommand()
 	foo.Run = func(cmd *cli.Command, pid int, args []string) {
 		cmd.WriteLn([]byte{})

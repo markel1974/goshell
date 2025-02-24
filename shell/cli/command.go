@@ -162,8 +162,8 @@ func NewCommand() *Command {
 }
 
 func (c *Command) Parse(line string) bool {
-	args := strings.Split(line, " ")
-	if len(args) <= 0 {
+	args, err := Parse(line)
+	if err != nil {
 		return false
 	}
 	c.args = args
@@ -560,7 +560,7 @@ Loop:
 			// "--" terminates the flags
 			break Loop
 		case strings.HasPrefix(s, "--") && !strings.Contains(s, "=") && !hasNoOptDefVal(s[2:], flags):
-			// If '--mflag arg' then
+			// If '--flag arg' then
 			// delete arg from args.
 			fallthrough // (do the same as below)
 		case strings.HasPrefix(s, "-") && !strings.Contains(s, "=") && len(s) == 2 && !shortHasNoOptDefVal(s[1:], flags):
