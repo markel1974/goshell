@@ -161,8 +161,13 @@ func NewCommand() *Command {
 	return &Command{}
 }
 
-func (c *Command) SetArgs(a []string) {
-	c.args = a
+func (c *Command) Parse(line string) bool {
+	args := strings.Split(line, " ")
+	if len(args) <= 0 {
+		return false
+	}
+	c.args = args
+	return true
 }
 
 // SetOutput sets the destination for usage and error messages.
@@ -266,13 +271,13 @@ func (c *Command) GetGlobalNormalizationFunc() func(f *mflag.FlagSet, name strin
 	return c.globNormFunc
 }
 
-func (c *Command) Write(data []byte) {
-	c.OutOrStdout().Write(data)
+func (c *Command) Write(data []byte) (int, error) {
+	return c.OutOrStdout().Write(data)
 }
 
-func (c *Command) WriteLn(data []byte) {
+func (c *Command) WriteLn(data []byte) (int, error) {
 	data = append(data, []byte(DefaultEol)...)
-	c.Write(data)
+	return c.Write(data)
 }
 
 func (c *Command) OutOrStdout() io.Writer {

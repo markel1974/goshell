@@ -59,7 +59,6 @@ type Shell struct {
 }
 
 func NewShell(auth interfaces.IAuthenticator, terminal interfaces.ITerminal, prompt string, autosave bool) *Shell {
-
 	c := &Shell{
 		history:       NewHistoryHandler(128, autosave),
 		echo:          true,
